@@ -2,9 +2,9 @@
 resource "aws_instance" "consul_master" {
   ami           = var.ubuntu_18-04
   instance_type = "t2.micro"
-  key_name = aws_key_pair.project_key.key_name
-  subnet_id = data.aws_subnet_ids.private_subnets.ids[count.index]
-  vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id , data.aws_security_groups.default_group.ids[0]]
+  key_name = var.key_name
+  subnet_id = module.module_vpc_reut.private_subnets.*.id[count.index]
+  vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id , module.module_vpc_reut.aws__default_security_group.default.ids[0]]
   associate_public_ip_address = false
   iam_instance_profile = aws_iam_instance_profile.consul-instance-profile.name
   tags = {
@@ -27,9 +27,9 @@ resource "aws_instance" "consul_nodes" {
   count = 2
   ami           = var.ubuntu_18-04
   instance_type = "t2.micro"
-  key_name = aws_key_pair.project_key.key_name
-  subnet_id = data.aws_subnet_ids.private_subnets.ids[count.index]
-  vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id , data.aws_security_groups.default_group.ids[0]]
+  key_name = var.key_name
+  subnet_id = module.module_vpc_reut.private_subnets.id[count.index]
+  vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id , module.module_vpc_reut.aws__default_security_group.default.ids[0]]
   associate_public_ip_address = false
   iam_instance_profile = aws_iam_instance_profile.consul-instance-profile.name
   tags = {
@@ -86,7 +86,7 @@ resource "aws_elb" "consul-lb" {
 resource "aws_security_group" "consul-cluster-vpc" {
   name        = "consul-cluster-vpc"
   description = "Default security group that allows inbound and outbound traffic from all instances in the VPC"
-  vpc_id      = data.aws_vpcs.myvpc.ids[0]
+  vpc_id      = module.module_vpc_reut.vpc_id
 
   ingress {
     from_port = "8300"
@@ -145,7 +145,7 @@ resource "aws_security_group" "consul-cluster-vpc" {
     protocol  = "-1"
   }
 
-  tags {
+  tags = {
     Name    = "Project-Consul Cluster Int-VPC"
   }
 }

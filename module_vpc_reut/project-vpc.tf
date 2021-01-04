@@ -117,7 +117,7 @@ resource "aws_iam_policy" "policy-ansible-role" {
 
 resource "aws_iam_policy_attachment" "attachment-policy-ansible-role" {
   name       = "ansible-attachment-policy"
-  roles      = aws_iam_role.ansible-role.name
+  roles      = [aws_iam_role.ansible-role.name, ""]
   policy_arn = aws_iam_policy.policy-ansible-role.arn
 }
 
@@ -133,8 +133,8 @@ resource "aws_iam_instance_profile" "ansible_profile" {
 resource "aws_instance" "ansible_server" {
   ami                         = var.ubuntu_18-04
   instance_type               = "t2.micro"
-  subnet_id                   =  aws_subnet.public_subnet.*.id
-  vpc_security_group_ids      = aws_default_security_group.default.id
+  subnet_id                   = "aws_subnet.public_subnet.*.id"
+  vpc_security_group_ids      = [aws_default_security_group.default.id, ""]
   associate_public_ip_address = true
   key_name                    = var.key_name
   iam_instance_profile        = aws_iam_instance_profile.ansible_profile.name

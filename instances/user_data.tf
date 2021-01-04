@@ -11,7 +11,7 @@ sed -i '15,23d' /var/www/html/index.nginx-debian.html
 echo "hostname: $HOSTNAME"  >> /var/www/html/index.nginx-debian.html
 
 # Change Nginx configuration to get real user’s IP address in Nginx log files-
-echo "set_real_ip_from  ${module.vpc_module.vpc_cidr};" >> /etc/nginx/conf.d/default.conf; echo "real_ip_header    X-Forwarded-For;" >> /etc/nginx/conf.d/default.conf
+echo "set_real_ip_from  ${module.module_vpc_reut.vpc_cidr};" >> /etc/nginx/conf.d/default.conf; echo "real_ip_header    X-Forwarded-For;" >> /etc/nginx/conf.d/default.conf
 
 service nginx restart
 

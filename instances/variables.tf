@@ -36,3 +36,8 @@ variable region {
 variable "profile" {
   default = "reut"
 }
+
+variable "ubuntu_18-04" {
+default = "ami-0a313d6098716f372"
+}
+
