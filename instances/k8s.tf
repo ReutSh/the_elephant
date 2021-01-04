@@ -6,7 +6,7 @@ resource "aws_instance" "kubernetes_master" {
   key_name = aws_key_pair.project_key.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
   subnet_id = data.aws_subnet_ids.private_subnets.ids[count.index]
-  vpc_security_group_ids = aws_security_group.master-kubernetes.id, data.aws_security_groups.default_group.ids[0], aws_security_group.consul-cluster-vpc.id 
+  vpc_security_group_ids = [aws_security_group.master-kubernetes.id, data.aws_security_groups.default_group.ids[0], aws_security_group.consul-cluster-vpc.id] 
   associate_public_ip_address = false
   tags = {
     Name = "project_kubernetes_master_server"
@@ -28,7 +28,7 @@ resource "aws_instance" "kubernetes_minions" {
   key_name = aws_key_pair.project_key.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
   subnet_id = data.aws_subnet_ids.private_subnets.ids[count.index]
-  vpc_security_group_ids = aws_security_group.minions-kubernetes.id, data.aws_security_groups.default_group.ids[0] , aws_security_group.consul-cluster-vpc.id
+  vpc_security_group_ids = [aws_security_group.minions-kubernetes.id, data.aws_security_groups.default_group.ids[0] , aws_security_group.consul-cluster-vpc.id]
   associate_public_ip_address = false
   tags = {
     Name = "project_kubernetes_node_server_${count.index+1}"
@@ -255,7 +255,7 @@ resource "aws_elb" "k8s-lb" {
   name = "project-app-lb"
 
   security_groups = [
-    aws_security_group.elb-kubernetes.id}
+    aws_security_group.elb-kubernetes.id,
     data.aws_security_groups.default_group.ids[0]
   ]
 

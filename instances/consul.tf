@@ -17,8 +17,9 @@ resource "aws_instance" "consul_master" {
     user        = "ubuntu"
     host        = aws_instance.consul_master.private_ip
     private_key = tls_private_key.tls-key.private_key_pem
-
-  }  provisioner "remote-exec" {
+  } 
+  
+  provisioner "remote-exec" {
   }
 
 }
@@ -29,7 +30,7 @@ resource "aws_instance" "consul_nodes" {
   ami           = var.ubuntu_18-04
   instance_type = "t2.micro"
   key_name = aws_key_pair.project_key.key_name
-  subnet_id = data.aws_subnet_ids.private_subnets.ids, [count.index])
+  subnet_id = data.aws_subnet_ids.private_subnets.ids[count.index]
   vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id , data.aws_security_groups.default_group.ids[0]]
   associate_public_ip_address = false
   iam_instance_profile = aws_iam_instance_profile.consul-instance-profile.name
