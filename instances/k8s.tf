@@ -3,10 +3,10 @@
 resource "aws_instance" "kubernetes_master" {
   ami           = var.ubuntu_18-04
   instance_type = "t2.medium"
-  key_name = aws_key_pair.project_key.key_name
+  key_name = var.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
-  subnet_id = data.aws_subnet_ids.private_subnets.ids[count.index]
-  vpc_security_group_ids = [aws_security_group.master-kubernetes.id, data.aws_security_groups.default_group.ids[0], aws_security_group.consul-cluster-vpc.id] 
+  subnet_id = module.module_vpc_reut.private_subnets.id[count.index]
+  vpc_security_group_ids = [aws_security_group.master-kubernetes.id, module.module_vpc_reut.aws__default_security_group.default.ids[0], aws_security_group.consul-cluster-vpc.id] 
   associate_public_ip_address = false
   tags = {
     Name = "project_kubernetes_master_server"
@@ -25,10 +25,10 @@ resource "aws_instance" "kubernetes_minions" {
   count = 2
   ami           = var.ubuntu_18-04
   instance_type = "t2.medium"
-  key_name = aws_key_pair.project_key.key_name
+  key_name = var.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
-  subnet_id = data.aws_subnet_ids.private_subnets.ids[count.index]
-  vpc_security_group_ids = [aws_security_group.minions-kubernetes.id, data.aws_security_groups.default_group.ids[0] , aws_security_group.consul-cluster-vpc.id]
+  subnet_id = module.module_vpc_reut.private_subnets.id[count.index]
+  vpc_security_group_ids = [aws_security_group.minions-kubernetes.id, module.module_vpc_reut.aws__default_security_group.default.ids[0] , aws_security_group.consul-cluster-vpc.id]
   associate_public_ip_address = false
   tags = {
     Name = "project_kubernetes_node_server_${count.index+1}"
@@ -49,7 +49,7 @@ resource "aws_instance" "kubernetes_minions" {
 
 # master #
 resource "aws_security_group" "master-kubernetes" {
-  vpc_id = data.aws_vpcs.myvpc.ids[0]
+  vpc_id = module.module_vpc_reut.vpc_id
   name        = "master_kubernetes"
   
 
@@ -130,7 +130,7 @@ resource "aws_security_group" "master-kubernetes" {
 # minions #
 
 resource "aws_security_group" "minions-kubernetes" {
-  vpc_id = data.aws_vpcs.myvpc.ids[0]
+  vpc_id = module.module_vpc_reut.vpc_id
   name        = "minions_kubernetes"
   
 
@@ -210,7 +210,7 @@ resource "aws_security_group" "minions-kubernetes" {
 
 
 resource "aws_security_group" "elb-kubernetes" {
-  vpc_id = data.aws_vpcs.myvpc.ids[0]
+  vpc_id = module.module_vpc_reut.vpc_id
   name        = "elb_kubernetes"
   
 

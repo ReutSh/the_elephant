@@ -6,7 +6,7 @@ resource "aws_instance" "nginx" {
   ami                         = data.aws_ami.ubuntu-18.id
   instance_type               = var.instance_type
   key_name                    = var.key_name
-  subnet_id                   = module.vpc_module.public_subnets_id[count.index]
+  subnet_id                   = module.module_vpc_reut.public_subnets_id[count.index]
   vpc_security_group_ids      = [aws_security_group.nginx_instances_access.id]
   user_data                   = local.nginx
 
@@ -33,13 +33,13 @@ resource "aws_instance" "nginx" {
 
 
 resource "aws_security_group" "nginx_instances_access" {
-  vpc_id = module.vpc_module.vpc_id
+  vpc_id = module.module_vpc_reut.vpc_id
   name   = "nginx-access"
 
   tags = merge(
     local.common_tags,
     map(
-      "Name", "nginx-access-${module.vpc_module.vpc_id}"
+      "Name", "nginx-access-${module.module_vpc_reut.vpc_id}"
     )
   )
 }

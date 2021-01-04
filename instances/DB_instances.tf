@@ -4,7 +4,7 @@ resource "aws_instance" "DB_instances" {
   ami                         = data.aws_ami.ubuntu-18.id
   instance_type               = var.instance_type
   key_name                    = var.key_name
-  subnet_id                   = module.vpc_module.private_subnets_id[count.index]
+  subnet_id                   = module.module_vpc_reut.private_subnets_id[count.index]
   associate_public_ip_address = false
   vpc_security_group_ids      = [aws_security_group.DB_instnaces_access.id]
 
@@ -14,10 +14,10 @@ resource "aws_instance" "DB_instances" {
 }
 
 resource "aws_security_group" "DB_instnaces_access" {
-  vpc_id = module.vpc_module.vpc_id
+  vpc_id = module.module_vpc_reut.vpc_id
   name   = "DB-access"
 
-  tags = merge(local.common_tags, map("Name", "DB-access-${module.vpc_module.vpc_id}"))
+  tags = merge(local.common_tags, map("Name", "DB-access-${module.module_vpc_reut.vpc_id}"))
 }
 
 resource "aws_security_group_rule" "DB_ssh_acess" {
