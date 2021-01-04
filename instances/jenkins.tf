@@ -48,7 +48,7 @@ resource "aws_instance" "jenkins_slaves" {
 # SECURITY GROUPS #
 
 resource "aws_security_group" "master-jenkins" {
-  vpc_id = "${data.aws_vpcs.myvpc.ids[0]}"
+  vpc_id = data.aws_vpcs.myvpc.ids[0]
   name        = "jenkins8080"
   
 
