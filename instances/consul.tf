@@ -1,6 +1,4 @@
-##########################################
-### INSTANCES ###
-##########################################
+# INSTANCES #
 resource "aws_instance" "consul_master" {
   ami           = var.ubuntu_18-04
   instance_type = "t2.micro"

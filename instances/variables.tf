@@ -33,6 +33,6 @@ variable region {
   default = "us-east-1"
 }
 
-variable "aws_profile" {
+variable "profile" {
   default = "reut"
 }
