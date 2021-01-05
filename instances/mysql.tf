@@ -7,8 +7,8 @@ resource "aws_instance" "MySQL_master" {
   instance_type = "t2.micro"
   key_name = var.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
-  subnet_id = module.module_vpc_reut.private_subnets.id[count.index]
-  vpc_security_group_ids = [aws_security_group.MySQL.id , module.module_vpc_reut.aws__default_security_group.default.ids[0] , aws_security_group.consul-cluster-vpc.id]
+  subnet_id = module.module_vpc_reut.private_subnets_id[count.index]
+  vpc_security_group_ids = [aws_security_group.MySQL.id , data.aws_security_groups.default_group.id[0] , aws_security_group.consul-cluster-vpc.id]
   associate_public_ip_address = false
   tags = {
     Name = "project_MySQL_master_server"
@@ -29,8 +29,8 @@ resource "aws_instance" "MySQL_slave" {
   instance_type = "t2.micro"
   key_name = var.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
-  subnet_id = module.module_vpc_reut.private_subnets.id[count.index]
-  vpc_security_group_ids = [aws_security_group.MySQL.id ,module.module_vpc_reut.aws__default_security_group.default.ids[0] ,aws_security_group.consul-cluster-vpc.id]
+  subnet_id = module.module_vpc_reut.private_subnets_id[count.index]
+  vpc_security_group_ids = [aws_security_group.MySQL.id ,data.aws_security_groups.default_group.id[0] ,aws_security_group.consul-cluster-vpc.id]
   associate_public_ip_address = false
   tags = {
     Name = "project_MySQL_slave_server"

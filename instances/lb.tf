@@ -1,4 +1,4 @@
-resource "aws_lb" "web-nginx" {
+ resource "aws_lb" "web-nginx" {
   name               = "nginx-alb"
   internal           = false
   load_balancer_type = "application"
