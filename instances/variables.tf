@@ -19,6 +19,7 @@ variable "key_name" {
 
 variable "ubuntu_account_number" {
   default = "099720109477"
+  type = string
 }
 
 variable "nginx_instances_count" {

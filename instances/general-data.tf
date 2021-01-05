@@ -4,7 +4,7 @@ data "aws_availability_zones" "available" {}
 
 data "aws_ami" "ubuntu-18" {
   most_recent = true
-  owners      = var.ubuntu_account_number
+  owners      = [var.ubuntu_account_number]
 
   filter {
     name   = "name"
@@ -25,14 +25,14 @@ data "aws_security_groups" "default_group" {
 }
 
 data "aws_subnet_ids" "public_subnets" {
-    vpc_id = data.aws_vpcs.my-vpc.ids[0]
+    vpc_id = data.aws_vpcs.my-vpc.id
     tags = {
         Name = "project_public_subnet_*"
     }
 }
 
 data "aws_subnet_ids" "private_subnets" {
-    vpc_id = data.aws_vpcs.my-vpc.ids[0]
+    vpc_id = data.aws_vpcs.my-vpc.id
     tags = {
         Name = "project_private_subnet_*"
     }
