@@ -6,14 +6,14 @@ resource "aws_instance" "DB_instances" {
   key_name                    = var.key_name
   subnet_id                   = module.module_vpc_reut.private_subnets_id[count.index]
   associate_public_ip_address = false
-  vpc_security_group_ids      = [aws_security_group.DB_instnaces_access.id]
+  vpc_security_group_ids      = aws_security_group.DB_instances_access.id
 
   tags = merge(
     local.common_tags,
-  map("Name", "DB-${regex(".$", data.aws_availability_zones.available.names[count.index])}"))
-}
+  map("Name", "DB-${regex(".$", data.aws_availability_zones.available.names[0])})")
+  }
 
-resource "aws_security_group" "DB_instnaces_access" {
+resource "aws_security_group" "DB_instances_access" {
   vpc_id = module.module_vpc_reut.vpc_id
   name   = "DB-access"
 
@@ -24,7 +24,7 @@ resource "aws_security_group_rule" "DB_ssh_acess" {
   description       = "allow ssh access from anywhere"
   from_port         = 22
   protocol          = "tcp"
-  security_group_id = aws_security_group.DB_instnaces_access.id
+  security_group_id = aws_security_group.DB_instances_access.id
   to_port           = 22
   type              = "ingress"
   cidr_blocks       = ["0.0.0.0/0"]
@@ -34,7 +34,7 @@ resource "aws_security_group_rule" "DB_outbound_anywhere" {
   description       = "allow outbound traffic to anywhere"
   from_port         = 0
   protocol          = "-1"
-  security_group_id = aws_security_group.DB_instnaces_access.id
+  security_group_id = aws_security_group.DB_instances_access.id
   to_port           = 0
   type              = "egress"
   cidr_blocks       = ["0.0.0.0/0"]

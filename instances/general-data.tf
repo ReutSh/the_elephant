@@ -1,43 +1,13 @@
 # DATA #
 
-data "aws_availability_zones" "available" {}
-
 data "aws_ami" "ubuntu-18" {
   most_recent = true
   owners      = [var.ubuntu_account_number]
-
   filter {
     name   = "name"
     values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
   }
 }
-
-data "aws_vpcs" "my-vpc" {
-  tags = {
-    Name = "project_vpc"
-  }
-}
-
-data "aws_security_groups" "default_group" {
-  tags = {
-    Name = "project-default_sg"
-  }
-}
-
-data "aws_subnet_ids" "public_subnets" {
-    vpc_id = data.aws_vpcs.my-vpc.id
-    tags = {
-        Name = "project_public_subnet_*"
-    }
-}
-
-data "aws_subnet_ids" "private_subnets" {
-    vpc_id = data.aws_vpcs.my-vpc.id
-    tags = {
-        Name = "project_private_subnet_*"
-    }
-}
-
 
 
 # Key Pair #
@@ -78,7 +48,7 @@ resource "aws_iam_policy" "policy-describe-role" {
 
 resource "aws_iam_policy_attachment" "attachment-policy-describe-role" {
   name = "describe-attachment-policy"
-  roles = aws_iam_role.describe-role.name
+  roles = [aws_iam_role.describe-role.name, ""]
   policy_arn = aws_iam_policy.policy-describe-role.arn
 }
 

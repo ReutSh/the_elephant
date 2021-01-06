@@ -5,8 +5,8 @@ resource "aws_instance" "kubernetes_master" {
   instance_type = "t2.medium"
   key_name = var.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
-  subnet_id = module.module_vpc_reut.private_subnets_id
-  vpc_security_group_ids = [aws_security_group.master-kubernetes.id, data.aws_security_groups.default_group.id, aws_security_group.consul-cluster-vpc.id]
+  subnet_id = "module.module_vpc_reut.private_subnets_id"
+  vpc_security_group_ids = [aws_security_group.master-kubernetes.id, module.module_vpc_reut.default_security_group, aws_security_group.consul-cluster-vpc.id]
   associate_public_ip_address = false
   tags = {
     Name = "project_kubernetes_master_server"
@@ -28,7 +28,7 @@ resource "aws_instance" "kubernetes_minions" {
   key_name = var.key_name
   iam_instance_profile = aws_iam_instance_profile.ec2_describe_profile.name
   subnet_id = module.module_vpc_reut.private_subnets_id[count.index]
-  vpc_security_group_ids = [aws_security_group.minions-kubernetes.id, data.aws_security_groups.default_group.id , aws_security_group.consul-cluster-vpc.id]
+  vpc_security_group_ids = [aws_security_group.minions-kubernetes.id, module.module_vpc_reut.default_security_group, aws_security_group.consul-cluster-vpc.id]
   associate_public_ip_address = false
   tags = {
     Name = "project_kubernetes_node_server_${count.index+1}"
@@ -257,10 +257,10 @@ resource "aws_elb" "k8s-lb" {
 
   security_groups = [
     aws_security_group.elb-kubernetes.id,
-    data.aws_security_groups.default_group.ids[0]
+    module.module_vpc_reut.default_security_group
   ]
 
-  subnets = [data.aws_subnet_ids.public_subnets.ids]
+  subnets = [module.module_vpc_reut.public_subnets_id]
   
   listener {
     instance_port     = 30000 
