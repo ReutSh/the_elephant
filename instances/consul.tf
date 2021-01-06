@@ -3,8 +3,8 @@ resource "aws_instance" "consul_master" {
   ami           = var.ubuntu_18-04
   instance_type = "t2.micro"
   key_name = var.key_name
-  subnet_id = module.module_vpc_reut.private_subnets.*.id[count.index]
-  vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id , module.module_vpc_reut.aws__default_security_group.default.ids[0]]
+  subnet_id = "module.module_vpc_reut.private_subnets_id"
+  vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id, module.module_vpc_reut.default_security_group]
   associate_public_ip_address = false
   iam_instance_profile = aws_iam_instance_profile.consul-instance-profile.name
   tags = {
@@ -24,20 +24,21 @@ resource "aws_instance" "consul_master" {
 
 
 resource "aws_instance" "consul_nodes" {
-  count = 2
-  ami           = var.ubuntu_18-04
-  instance_type = "t2.micro"
-  key_name = var.key_name
-  subnet_id = module.module_vpc_reut.private_subnets.id[count.index]
-  vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id , module.module_vpc_reut.aws__default_security_group.default.ids[0]]
+  count                       = 2
+  ami                         = var.ubuntu_18-04
+  instance_type               = "t2.micro"
+  key_name                    = var.key_name
+  subnet_id                   = module.module_vpc_reut.private_subnets_id[count.index]
+  vpc_security_group_ids      = [aws_security_group.consul-cluster-vpc.id, module.module_vpc_reut.default_security_group]
   associate_public_ip_address = false
-  iam_instance_profile = aws_iam_instance_profile.consul-instance-profile.name
+  iam_instance_profile        = aws_iam_instance_profile.consul-instance-profile.name
   tags = {
     Name = "project_consul_node_server_${count.index+1}"
     Consul = "yes"
   }
   connection {
     user        = "ubuntu"
+    host        = aws_instance.consul_nodes[count.index].private_ip
     private_key = tls_private_key.tls-key.private_key_pem
   }
   provisioner "remote-exec" {
@@ -53,10 +54,10 @@ resource "aws_elb" "consul-lb" {
 
   security_groups = [
     aws_security_group.consul-cluster-vpc.id,
-    data.aws_security_groups.default_group.ids[0]
+    module.module_vpc_reut.default_security_group
   ]
 
-  subnets = [data.aws_subnet_ids.public_subnets.ids]
+  subnets = [module.module_vpc_reut.private_subnets_id]
   
   listener {
     instance_port     = 8500
@@ -237,14 +238,14 @@ EOF
 //  Attach the policies to the role.
 resource "aws_iam_policy_attachment" "consul-instance-forward-logs" {
   name       = "consul-instance-forward-logs"
-  roles      = aws_iam_role.consul-instance-role.name
-  policy_arn = aws_iam_policy.forward-logs.arn
+  roles      = [aws_iam_role.consul-instance-role.name, ""]
+  policy_arn = aws_iam_policy.logs-forward.arn
 }
 
 resource "aws_iam_policy_attachment" "consul-instance-leader-discovery" {
   name       = "consul-instance-leader-discovery"
-  roles      = aws_iam_role.consul-instance-role.name
-  policy_arn = aws_iam_policy.leader-discovery.arn
+  roles      = [aws_iam_role.consul-instance-role.name, ""]
+  policy_arn = aws_iam_policy.discovery-leader.arn
 }
 
 //  Create a instance profile for the role.
