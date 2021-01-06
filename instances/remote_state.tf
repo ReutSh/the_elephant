@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket  = "remote-state-opsschool-tf"
-    key     = "project" 
+    bucket  = "opsschool-remote-state-terraform"
+    key     = "application"
     region  = "us-east-1"
-    profile = "reut"
+    profile = "ops-school"
   }
 }
