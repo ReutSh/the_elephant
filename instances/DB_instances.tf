@@ -6,12 +6,12 @@ resource "aws_instance" "DB_instances" {
   key_name                    = var.key_name
   subnet_id                   = module.module_vpc_reut.private_subnets_id[count.index]
   associate_public_ip_address = false
-  vpc_security_group_ids      = aws_security_group.DB_instances_access.id
+  vpc_security_group_ids      = [aws_security_group.DB_instances_access.id]
 
   tags = merge(
-    local.common_tags,
-  map("Name", "DB-${regex(".$", data.aws_availability_zones.available.names[0])})")
-  }
+  local.common_tags,
+  map("Name", "DB-${regex(".$", data.aws_availability_zones.available.names[count.index])}"))
+}
 
 resource "aws_security_group" "DB_instances_access" {
   vpc_id = module.module_vpc_reut.vpc_id

@@ -35,7 +35,7 @@ variable region {
 }
 
 variable "profile" {
-  default = "reut"
+  default = "ops-school"
 }
 
 variable "ubuntu_18-04" {

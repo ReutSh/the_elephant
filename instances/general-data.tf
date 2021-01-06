@@ -1,4 +1,5 @@
 # DATA #
+data "aws_availability_zones" "available" {}
 
 data "aws_ami" "ubuntu-18" {
   most_recent = true

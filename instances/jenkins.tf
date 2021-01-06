@@ -13,13 +13,13 @@ resource "aws_instance" "jenkins_master" {
   tags = {
     Name = "project_jenkins_master_server"
   }
-    connection {
-    user        = "ubuntu"
-    host        = aws_instance.jenkins_master.private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  }
-  provisioner "remote-exec" {
-  }
+//    connection {
+//    user        = "ubuntu"
+//    host        = aws_instance.jenkins_master.private_ip
+//    private_key = tls_private_key.tls-key.private_key_pem
+//  }
+//  provisioner "remote-exec" {
+//  }
 
 }
 
@@ -35,13 +35,13 @@ resource "aws_instance" "jenkins_slaves" {
   tags = {
     Name = "project_jenkins_slave_server_${count.index+1}"
   }
-    connection {
-    user = "ubuntu"
-    host = aws_instance.jenkins_slaves[count.index].private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  }
-  provisioner "remote-exec" {
-  }
+//    connection {
+//    user = "ubuntu"
+//    host = aws_instance.jenkins_slaves[count.index].private_ip
+//    private_key = tls_private_key.tls-key.private_key_pem
+//  }
+//  provisioner "remote-exec" {
+//  }
 }
 
 

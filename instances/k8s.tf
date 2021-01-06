@@ -12,13 +12,13 @@ resource "aws_instance" "kubernetes_master" {
     Name = "project_kubernetes_master_server"
   }
 
-      connection {
-    user        = "ubuntu"
-    host        = aws_instance.kubernetes_master.private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  }
-  provisioner "remote-exec" {
-  }
+//      connection {
+//    user        = "ubuntu"
+//    host        = aws_instance.kubernetes_master.private_ip
+//    private_key = tls_private_key.tls-key.private_key_pem
+//  }
+//  provisioner "remote-exec" {
+//  }
 }
 
 resource "aws_instance" "kubernetes_minions" {
@@ -33,13 +33,13 @@ resource "aws_instance" "kubernetes_minions" {
   tags = {
     Name = "project_kubernetes_node_server_${count.index+1}"
   }
-      connection {
-    user        = "ubuntu"
-    host = aws_instance.kubernetes_minions[count.index].private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  }
-  provisioner "remote-exec" {
-  }
+//      connection {
+//    user        = "ubuntu"
+//    host = aws_instance.kubernetes_minions[count.index].private_ip
+//    private_key = tls_private_key.tls-key.private_key_pem
+//  }
+//  provisioner "remote-exec" {
+//  }
 }
 
 

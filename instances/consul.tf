@@ -11,14 +11,14 @@ resource "aws_instance" "consul_master" {
     Name = "project_consul_master_server"
     Consul = "yes"
   }
-  connection {
-    user        = "ubuntu"
-    host        = aws_instance.consul_master.private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  } 
-  
-  provisioner "remote-exec" {
-  }
+//  connection {
+//    user        = "ubuntu"
+//    host        = aws_instance.consul_master.private_ip
+//    private_key = tls_private_key.tls-key.private_key_pem
+//  }
+//
+//  provisioner "remote-exec" {
+//  }
 
 }
 
@@ -36,13 +36,13 @@ resource "aws_instance" "consul_nodes" {
     Name = "project_consul_node_server_${count.index+1}"
     Consul = "yes"
   }
-  connection {
-    user        = "ubuntu"
-    host        = aws_instance.consul_nodes[count.index].private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  }
-  provisioner "remote-exec" {
-  }
+//  connection {
+//    user        = "ubuntu"
+//    host        = aws_instance.consul_nodes[count.index].private_ip
+//    private_key = tls_private_key.tls-key.private_key_pem
+//  }
+//  provisioner "remote-exec" {
+//  }
 
 }
 
@@ -57,7 +57,7 @@ resource "aws_elb" "consul-lb" {
     module.module_vpc_reut.default_security_group
   ]
 
-  subnets = [module.module_vpc_reut.private_subnets_id]
+  subnets = module.module_vpc_reut.private_subnets_id
   
   listener {
     instance_port     = 8500
@@ -75,6 +75,8 @@ resource "aws_elb" "consul-lb" {
   }
 
   instances = [aws_instance.consul_master.id , aws_instance.consul_nodes.*.id]
+  # instances = [ servera , [ serverb, serverc] ]
+  # instances = [servera, serverb, serverc]
   tags = {
     Name = "project_consul_load_balancer"
   }
