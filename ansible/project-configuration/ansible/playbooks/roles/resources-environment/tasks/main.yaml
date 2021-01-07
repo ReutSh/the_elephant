@@ -1,0 +1,24 @@
+
+  - name: run tf
+    terraform:
+      project_path: /mnt/c/Users/shwar/Documents/ops/the_elephant_reut/the_elephant/ansible/project-configuration/instances
+      force_init: true
+      
+  #- name: Refresh inventory to ensure new instaces exist in inventory
+  #  meta: refresh_inventory
+
+  - name: copy my inventory to ansible/hosts
+    become: yes
+    become_user: root
+    copy:
+      src: /home/ubuntu/project-configuration/ansible/playbooks/inventory
+      dest: /etc/ansible/hosts
+
+  - name: copy my ansible.cfg to etc/ansible
+    become: yes
+    become_user: root
+    copy:
+      src: /home/ubuntu/project-configuration/ansible/playbooks/ansible.cfg
+      dest: /etc/ansible/ansible.cfg
+
+

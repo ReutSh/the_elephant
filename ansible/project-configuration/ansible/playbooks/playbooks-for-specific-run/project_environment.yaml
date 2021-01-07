@@ -1,0 +1,56 @@
+- name: Configuration of the environment with terraform
+  hosts: 127.0.0.1
+  become_user: ubuntu
+  roles:
+    - resources-environment
+
+- name: Consul configuration & install  
+  hosts: consul
+  become: yes
+  become_method: sudo
+  roles:
+    - consul-install
+
+- name: Configure k8s part I - Docker installaion &  Pre-requisites
+  hosts: kubernetes
+  become: yes
+  become_method: sudo
+  roles:
+    - docker-install
+    - k8s-pre-requisites
+
+- name: Configure k8s part II - Master configure
+  hosts: kubernetes_master
+  become: yes
+  become_method: sudo
+  roles:
+    - k8s-master
+
+- name: Configure k8s part III - Minions configure
+  hosts: kubernetes_nodes
+  become: yes
+  become_method: sudo
+  roles:
+    - k8s-minions
+
+- name: Install Java on jenkins servers
+  hosts: jenkins
+  become: yes
+  become_method: sudo
+  roles:
+    - jenkins-java
+
+- name: Tasks on slaves - create user jenkins , set jenkins as sudo , copy ssh key
+  hosts: jenkins_slaves
+  become: yes
+  become_method: sudo
+  roles:
+    - docker-install
+    - jenkins-nodes
+
+- name: Install Jenkins & plugins
+  hosts: jenkins_master
+  become: yes
+  become_method: sudo
+  roles:
+    - jenkins-master

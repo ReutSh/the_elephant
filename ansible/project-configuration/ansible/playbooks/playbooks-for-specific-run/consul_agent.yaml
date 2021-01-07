@@ -1,0 +1,9 @@
+---
+- name: Consul agent install
+  hosts: all
+  become: yes
+  become_method: sudo
+  tasks:
+    - import_role:
+        name: consul-agent-install
+      when: "'consul' not in group_names"

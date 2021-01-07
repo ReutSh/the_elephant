@@ -1,0 +1,49 @@
+
+    - name: Add  user jenkins
+      user:
+        name: jenkins
+        home: /home/jenkins
+        shell: /bin/bash
+      become: yes
+      become_method: sudo
+
+    - name: Make jenkins user sudoer
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        line: 'jenkins	ALL=(ALL:ALL) NOPASSWD:ALL'
+        validate: 'visudo -cf %s'
+      become: yes
+      become_method: sudo
+
+    - name: make .ssh dir
+      file:
+        path: /home/jenkins/.ssh
+        state: directory
+      become_user: jenkins
+      become_method: sudo
+      become: yes
+
+    - name: touch authorized_keys
+      file:
+        path: /home/jenkins/.ssh/authorized_keys
+        state: touch
+        mode: 0664
+      become_user: jenkins
+      become_method: sudo
+      become: yes
+
+    - name: copy public key to jenkins user
+      copy:
+        src: /home/ubuntu/.ssh/authorized_keys
+        dest: /home/jenkins/.ssh/authorized_keys
+        owner: jenkins
+        group: jenkins
+        remote_src: yes
+      become: yes
+      become_method: sudo
+
+    - name: add user jenkins to docker group
+      shell: usermod -aG docker jenkins
+      become: yes
+      become_method: sudo

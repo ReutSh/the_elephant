@@ -1,0 +1,32 @@
+---
+
+jenkins_config_files_path: /home/ubuntu/project-configuration/ansible/jenkins_files
+private_key_path: ~/.ssh/id_rsa
+jenkins_home_folder: /var/lib/jenkins
+jenkins_admin_username: reut
+jenkins_admin_password: reut2030
+docker_hub_user: shwartza
+docker_hub_pass: ImGonnaMakeIt
+jenkins_url: http://{{ inventory_hostname }}:8080
+jenikns_cli_auth: java -jar ~/jenkins-cli.jar -s {{jenkins_url}}/ -auth
+cli_create_credentials: create-credentials-by-xml system::system::jenkins _
+
+node_names: 
+  - node-1
+  - node-2
+
+jenkins_plugins:
+  - ssh-slaves
+  - github
+  - docker-plugin
+  - kubernetes-cd
+  - workflow-aggregator #(pipeline)
+  - workflow-multibranch
+
+files_to_delete:
+  - node-1
+  - node-2
+  - jenkins-cred
+  - ubuntu-cred
+  - docker-hub-cred
+  - kubernetes-cred

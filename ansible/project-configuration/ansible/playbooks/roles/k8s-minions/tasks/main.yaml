@@ -1,0 +1,6 @@
+
+    - name: join cluster
+      shell: "{{ hostvars[groups['kubernetes_master'][0]].join_command }}"
+      args:
+        chdir: $HOME
+        creates: node_joined.txt

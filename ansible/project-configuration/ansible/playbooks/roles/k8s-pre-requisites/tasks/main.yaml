@@ -1,0 +1,23 @@
+
+  - name: update apt & install apt-transport-https
+    apt:
+      update_cache: yes
+      force: yes
+      name: apt-transport-https
+      state: present
+
+  - name: APT - kubernetes add GPG key
+    apt_key:
+      url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+      state: present
+
+  - name: APT - Add kubernetes repository
+    apt_repository:
+      repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+      state: present
+
+  - name: APT - install packages
+    apt:
+      name: ['kubelet','kubeadm','kubectl']
+      update_cache: yes
+      force: yes

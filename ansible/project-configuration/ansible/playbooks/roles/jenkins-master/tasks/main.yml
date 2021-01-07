@@ -1,0 +1,194 @@
+
+
+    - name: Add an apt key by id from a keyserver
+      apt_key: 
+        url: https://pkg.jenkins.io/debian/jenkins.io.key
+        state: present
+
+    - name: Add Jenkins apt repository.
+      apt_repository:
+        repo: deb http://pkg.jenkins.io/debian-stable binary/
+        state: present
+        update_cache: true
+
+    - name: install jenkins
+      apt:
+        update_cache: yes
+        name: jenkins
+        state: present
+
+    - name: Make dir in jenkins home directroy
+      file:
+        path: "{{jenkins_home_folder}}/init.groovy.d"
+        state: directory
+
+    - name: Configure default user
+      template:
+        src: "basic-security.groovy.j2"
+        dest: "{{jenkins_home_folder}}/init.groovy.d/basic-security.groovy"
+      notify: restart_jenkins_service
+
+    - name: Trigger handlers immediately in case Jenkins was installed
+      meta: flush_handlers
+    
+    - name: Wait for Jenkins to start up before proceeding.
+      command: "curl -D - --silent --max-time 5 {{jenkins_url}}/cli/"
+      args:
+          warn: false
+      register: result
+      until: (result.stdout.find("403 Forbidden") != -1) or (result.stdout.find("200 OK") != -1) and (result.stdout.find("Please wait while") == -1)
+      retries: 60
+      delay: 5
+      changed_when: false
+      check_mode: false
+
+    - name: Install plugins
+      become_user: ubuntu
+      jenkins_plugin:
+        name: "{{ item }}"
+        url_username: "{{jenkins_admin_username}}"
+        url_password: "{{jenkins_admin_password}}"
+      with_items:
+        - "{{jenkins_plugins}}"
+      notify: restart_jenkins_service
+
+    - name: Register private-key
+      become_user: ubuntu
+      delegate_to: 127.0.0.1
+      command: cat {{private_key_path}}
+      register: private_key_instances
+
+    - name: Get the jenkins-cli jarfile from the Jenkins server.
+      become_user: ubuntu
+      get_url:
+        url: "{{jenkins_url}}/jnlpJars/jenkins-cli.jar"
+        dest: "~/jenkins-cli.jar"
+      register: jarfile_get
+      until: "'OK' in jarfile_get.msg or '304' in jarfile_get.msg or 'file already exists' in jarfile_get.msg"
+      retries: 5
+      delay: 10
+      check_mode: false
+
+    - name: Trigger handlers immediately in case Jenkins was installed
+      meta: flush_handlers
+
+    - name: Wait for Jenkins to start up before proceeding.
+      command: "curl -D - --silent --max-time 5 {{jenkins_url}}/cli/"
+      args:
+          warn: false
+      register: result
+      until: (result.stdout.find("403 Forbidden") != -1) or (result.stdout.find("200 OK") != -1) and (result.stdout.find("Please wait while") == -1)
+      retries: 60
+      delay: 5
+      changed_when: false
+      check_mode: false
+
+    - name: Configure ssh credentials - jenkins 
+      become_user: ubuntu
+      template:
+        src: "jenkins-cred.j2"
+        dest: "~/jenkins-cred"
+
+    - name: Create ssh credentials in jenkins from template - jenkins
+      become_user: ubuntu
+      shell: "{{jenikns_cli_auth}} {{jenkins_admin_username}}:{{jenkins_admin_password}} {{cli_create_credentials}} < ~/jenkins-cred"
+
+    - name: Configure ssh credentials - ubuntu 
+      become_user: ubuntu
+      template:
+        src: "ubuntu-cred.j2"
+        dest: "~/ubuntu-cred"
+
+    - name: Create ssh credentials in jenkins from template - ubuntu
+      become_user: ubuntu
+      shell: "{{jenikns_cli_auth}} {{jenkins_admin_username}}:{{jenkins_admin_password}} {{cli_create_credentials}} < ~/ubuntu-cred"
+
+    - name: Configure nodes
+      become_user: ubuntu
+      template:
+        src: "node.j2"
+        dest: "~/{{ item }}"
+      loop: "{{ node_names }}"
+      loop_control:
+        index_var: index
+
+    - name: Create nodes in jenkins from template
+      become_user: ubuntu
+      shell: "{{jenikns_cli_auth}} {{jenkins_admin_username}}:{{jenkins_admin_password}} create-node {{ item }} < {{ item }}"
+      loop: "{{ node_names }}"
+      loop_control:
+        index_var: index
+
+    - name: Configure credentials for docker-hub
+      become_user: ubuntu
+      template:
+        src: "docker-hub-cred.j2"
+        dest: "~/docker-hub-cred"
+
+    - name: Create docker-hub credentials in jenkins from template 
+      become_user: ubuntu
+      shell: "{{jenikns_cli_auth}} {{jenkins_admin_username}}:{{jenkins_admin_password}} {{cli_create_credentials}} < ~/docker-hub-cred"
+
+    - name: Configure credentials for kubernetes master server
+      become_user: ubuntu
+      template:
+        src: "kubernetes-cred.j2"
+        dest: "~/kubernetes-cred"
+
+    - name: Create kubernetes master server credentials in jenkins from template 
+      become_user: ubuntu
+      shell: "{{jenikns_cli_auth}} {{jenkins_admin_username}}:{{jenkins_admin_password}} {{cli_create_credentials}} < ~/kubernetes-cred"
+    
+    - name: Copy job configuration
+      become_user: ubuntu
+      template:
+        src: "pipeline-configuration.j2"
+        dest: "~/pipeline-configuration"
+    
+    - name: Create jenkins job - create docker image & push it to docker-hub & deploy it on my kubernetes-cluser
+      become_user: ubuntu
+      shell: "{{jenikns_cli_auth}} {{jenkins_admin_username}}:{{jenkins_admin_password}} create-job deploy-app < pipeline-configuration"
+
+    - name: restart_jenkins_service
+      service:
+        name: jenkins
+        state: restarted
+
+    - name: Wait for Jenkins to start up before proceeding.
+      command: "curl -D - --silent --max-time 5 {{jenkins_url}}/cli/"
+      args:
+          warn: false
+      register: result
+      until: (result.stdout.find("403 Forbidden") != -1) or (result.stdout.find("200 OK") != -1) and (result.stdout.find("Please wait while") == -1)
+      retries: 60
+      delay: 5
+      changed_when: false
+      check_mode: false
+  
+    - name: Build my jenkins job
+      become_user: ubuntu
+      shell: "{{jenikns_cli_auth}} {{jenkins_admin_username}}:{{jenkins_admin_password}} build deploy-app"
+
+    - name: Clean sercret file from jenkins user
+      file:
+        state: absent
+        path: "{{jenkins_home_folder}}/init.groovy.d/basic-security.groovy"
+      
+    - name: Clean files from ubuntu
+      become_user: ubuntu
+      file:
+        state: absent
+        path: "~/{{ item }}"
+      loop: "{{ files_to_delete }}"
+
+
+
+
+      
+
+
+    
+
+
+
+    

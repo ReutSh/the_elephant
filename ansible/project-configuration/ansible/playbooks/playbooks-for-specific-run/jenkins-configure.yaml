@@ -1,0 +1,23 @@
+
+- name: Install Java on jenkins servers
+  hosts: jenkins
+  become: yes
+  become_method: sudo
+  roles:
+    - jenkins-java
+
+- name: Tasks on slaves - create user jenkins , set jenkins as sudo , copy ssh key
+  hosts: jenkins_slaves
+  become: yes
+  become_method: sudo
+  roles:
+    - docker-install
+    - jenkins-nodes
+
+- name: Install Jenkins & plugins
+  hosts: jenkins_master
+  become: yes
+  become_method: sudo
+  roles:
+    - jenkins-master
+

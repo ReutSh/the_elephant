@@ -1,0 +1,22 @@
+﻿<?xml version="1.1" encoding="UTF-8"?>
+<slave>
+  <name>{{item}}</name>
+  <description></description>
+  <remoteFS>/home/jenkins/</remoteFS>
+  <numExecutors>2</numExecutors>
+  <mode>NORMAL</mode>
+  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+  <launcher class="hudson.plugins.sshslaves.SSHLauncher" plugin="ssh-slaves@1.29.4">
+    <host>{{ hostvars[groups['jenkins_slaves'][index]]['ansible_eth0']['ipv4']['address']}}</host>
+    <port>22</port>
+    <credentialsId>kuku-jenkins</credentialsId>
+    <javaPath>/usr/bin/java</javaPath>
+    <launchTimeoutSeconds>210</launchTimeoutSeconds>
+    <maxNumRetries>10</maxNumRetries>
+    <retryWaitTime>15</retryWaitTime>
+    <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
+    <tcpNoDelay>true</tcpNoDelay>
+  </launcher>
+  <label></label>
+  <nodeProperties/>
+</slave>

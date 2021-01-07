@@ -1,0 +1,9 @@
+<com.microsoft.jenkins.kubernetes.credentials.KubeconfigCredentials plugin="kubernetes-cd@0.2.3">
+  <scope>GLOBAL</scope>
+  <id>kubernetes-master</id>
+  <description>master kubernetes server credentials</description>
+  <kubeconfigSource class="com.microsoft.jenkins.kubernetes.credentials.KubeconfigCredentials$FileOnKubernetesMasterKubeconfigSource">
+    <server>{{ k8s_master_ip }}:22</server>
+    <sshCredentialId>kuku-ubuntu</sshCredentialId>
+  </kubeconfigSource>
+</com.microsoft.jenkins.kubernetes.credentials.KubeconfigCredentials>

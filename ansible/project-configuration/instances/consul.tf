@@ -3,7 +3,7 @@ resource "aws_instance" "consul_master" {
   ami           = var.ubuntu_18-04
   instance_type = "t2.micro"
   key_name = var.key_name
-  subnet_id = "module.module_vpc_reut.private_subnets_id"
+  subnet_id = module.module_vpc_reut.private_subnets_id[0]
   vpc_security_group_ids = [aws_security_group.consul-cluster-vpc.id, module.module_vpc_reut.default_security_group]
   associate_public_ip_address = false
   iam_instance_profile = aws_iam_instance_profile.consul-instance-profile.name
@@ -11,15 +11,6 @@ resource "aws_instance" "consul_master" {
     Name = "project_consul_master_server"
     Consul = "yes"
   }
-  connection {
-    user        = "ubuntu"
-    host        = aws_instance.consul_master.private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  } 
-  
-  provisioner "remote-exec" {
-  }
-
 }
 
 
@@ -36,14 +27,6 @@ resource "aws_instance" "consul_nodes" {
     Name = "project_consul_node_server_${count.index+1}"
     Consul = "yes"
   }
-  connection {
-    user        = "ubuntu"
-    host        = aws_instance.consul_nodes[count.index].private_ip
-    private_key = tls_private_key.tls-key.private_key_pem
-  }
-  provisioner "remote-exec" {
-  }
-
 }
 
 
@@ -57,7 +40,7 @@ resource "aws_elb" "consul-lb" {
     module.module_vpc_reut.default_security_group
   ]
 
-  subnets = [module.module_vpc_reut.private_subnets_id]
+  subnets = module.module_vpc_reut.private_subnets_id
   
   listener {
     instance_port     = 8500
@@ -74,7 +57,7 @@ resource "aws_elb" "consul-lb" {
     interval            = 30
   }
 
-  instances = [aws_instance.consul_master.id , aws_instance.consul_nodes.*.id]
+  instances = [aws_instance.consul_master.id, aws_instance.consul_nodes.*.id]
   tags = {
     Name = "project_consul_load_balancer"
   }
@@ -244,7 +227,7 @@ resource "aws_iam_policy_attachment" "consul-instance-forward-logs" {
 
 resource "aws_iam_policy_attachment" "consul-instance-leader-discovery" {
   name       = "consul-instance-leader-discovery"
-  roles      = [aws_iam_role.consul-instance-role.name, ""]
+  roles      = aws_iam_role.consul-instance-role.*.name
   policy_arn = aws_iam_policy.discovery-leader.arn
 }
 

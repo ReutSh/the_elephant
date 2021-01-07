@@ -1,0 +1,66 @@
+
+  - name: Update the software package repository & Install dependencies
+    apt:
+      update_cache: yes
+      name: ['curl','net-tools','unzip']
+    
+  - name: Install consul - Download consul binary & Unzip 
+    unarchive:
+      src: https://releases.hashicorp.com/consul/1.9.1/consul_1.9.1_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+
+  - name: delete zip file
+    command: sudo rm -f  /usr/local/bin/consul_1.2.0_linux_amd64.zip #check the version to be deleted
+
+  - name: Create Consul bootstrap directory
+    file:
+      path: /etc/consul.d/bootstrap
+      state: directory
+      mode: 0755
+    when: hostvars[inventory_hostname].master == "yes"
+
+  - name: Copy configuration file
+    copy:
+      src: bootstrap-config.json
+      dest: /etc/consul.d/bootstrap/config.json
+      remote_src: no
+    when: hostvars[inventory_hostname].master == "yes"
+
+  - name: Copy systemd bootstrap consul.service
+    copy: 
+      src: consul.service
+      dest: /etc/systemd/system/consul.service
+      remote_src: no
+    when: hostvars[inventory_hostname].master == "yes"
+
+  - name: Start bootstrap Consul
+    systemd:
+      name: consul.service
+      state: started
+    when: hostvars[inventory_hostname].master == "yes"
+
+  - name: Create Consul server directory
+    file:
+      path: /etc/consul.d/server
+      state: directory
+      mode: 0755
+    when: hostvars[inventory_hostname].master == "no"
+
+  - name: Copy configuration file
+    template:
+      src: node-config.json.j2
+      dest: /etc/consul.d/server/config.json
+    when: hostvars[inventory_hostname].master == "no"
+
+  - name: Copy systemd bootstrap consul.service
+    template: 
+      src: node-consul.service.j2
+      dest: /etc/systemd/system/consul.service
+    when: hostvars[inventory_hostname].master == "no"
+
+  - name: Start Consul service
+    systemd:
+      name: consul.service
+      state: started
+

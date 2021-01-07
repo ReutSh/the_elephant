@@ -1,0 +1,14 @@
+[Unit]
+Description=Consul service discovery agent
+Requires=network-online.target
+After=network-online.target
+ 
+[Service]
+Environment=GOMAXPROCS=2
+Restart=on-failure
+ExecStart=/usr/local/bin/consul agent -server -ui -data-dir=/tmp/consul -node={{ inventory_hostname }} -config-dir=/etc/consul.d/server -enable-script-checks=true
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGTERM
+ 
+[Install]
+WantedBy=multi-user.target

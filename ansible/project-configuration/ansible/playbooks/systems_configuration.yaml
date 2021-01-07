@@ -1,0 +1,60 @@
+- name: consul configuration & install  
+  hosts: consul
+  become: yes
+  become_method: sudo
+  roles:
+    - consul-install
+
+- name: Consul agent install
+  hosts: all
+  become: yes
+  become_method: sudo
+  tasks:
+    - import_role:
+        name: consul-agent-install
+      when: "'consul' not in group_names"
+
+- name: Configure k8s part I - Docker installaion &  Pre-requisites
+  hosts: kubernetes
+  become: yes
+  become_method: sudo
+  roles:
+    - docker-install
+    - k8s-pre-requisites
+
+- name: Configure k8s part II - Master configure
+  hosts: kubernetes_master
+  become: yes
+  become_method: sudo
+  roles:
+    - k8s-master
+
+- name: Configure k8s part III - Minions configure
+  hosts: kubernetes_nodes
+  become: yes
+  become_method: sudo
+  roles:
+    - k8s-minions 
+
+
+- name: Install Java on jenkins servers
+  hosts: jenkins
+  become: yes
+  become_method: sudo
+  roles:
+    - jenkins-java
+
+- name: Slaves pre requisites - create user jenkins , set jenkins as sudo , copy ssh key
+  hosts: jenkins_slaves
+  become: yes
+  become_method: sudo
+  roles:
+    - docker-install
+    - jenkins-nodes
+
+- name: Install Jenkins & plugins
+  hosts: jenkins_master
+  become: yes
+  become_method: sudo
+  roles:
+    - jenkins-master

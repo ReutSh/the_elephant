@@ -1,0 +1,6 @@
+
+    - name: install java
+      apt:
+        update_cache: yes
+        name: openjdk-15-jdk
+        state: present
